@@ -35,8 +35,8 @@ date >> user-data-time.txt
 # systemctl restart nginx
 
 # copy ssl certificates to
-# - ssl_certificate_key /etc/nginx/ssl/wa.xn--tdelteile-q9a.de.key
-# - ssl_certificate /etc/nginx/ssl/wa.xn--tdelteile-q9a.de.crt
+# - ssl_certificate /etc/nginx/ssl/wa.xn--tdelteile-q9a.de/fullchain.pem;
+# - ssl_certificate_key /etc/nginx/ssl/wa.xn--tdelteile-q9a.de/privkey.pem;
 
 # companions
 # copy companion tiles to front/dist/resources/characters/
