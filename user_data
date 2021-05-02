@@ -1,16 +1,45 @@
 #!/bin/bash
+WA_ROOT=/opt/workadventure
 
 date > user-data-time.txt
 
+## create user workadventure with Home-Directory /opt/workadventure (vgl. binary kitch)
+##
+
+# install stuff
 DEBIAN_FRONTEND=noninteractive apt --assume-yes update
-DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop
-
-git clone https://github.com/thecodingmachine/workadventure.git /opt/workadventure
-git clone https://github.com/dirkbr/wa-deployment.git /opt/wa-deployment
-
-cp --backup /opt/wa-deployment/.env /opt/workadventure/.env
-cp --backup /opt/wa-deployment/docker-compose.yaml /opt/workadventure/docker-compose.yaml
+DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop nginx
 
 /opt/wa-deployment/install-docker.sh
 
+# clone repos
+git clone https://github.com/thecodingmachine/workadventure.git ${WA_ROOT}/source
+git clone https://github.com/dirkbr/wa-deployment.git ${WA_ROOT}/wa-deployment
+
+# copy docker  files
+cp --backup ${WA_ROOT}/wa-deployment/.env ${WA_ROOT}/source/.env
+cp --backup ${WA_ROOT}/wa-deployment/docker-compose.yaml ${WA_ROOT}/source/docker-compose.yaml
+
+# copy nginx config
+cp ${WA_ROOT}/wa-deployment/nginx-workadventure /etc/nginx/sites-available/workadventure
+# increase server_names_hash_bucket_size to 64 in /etc/nginx/nginx.conf
+
+
+
 date >> user-data-time.txt
+
+### afterwards:
+
+# test nginx config:
+# nginx -t
+# systemctl restart nginx
+
+# copy ssl certificates to
+# - ssl_certificate_key /etc/nginx/ssl/wa.xn--tdelteile-q9a.de.key
+# - ssl_certificate /etc/nginx/ssl/wa.xn--tdelteile-q9a.de.crt
+
+# companions
+# copy companion tiles to front/dist/resources/characters/
+# edit front/src/Phaser/Companion/CompanionTextures.ts
+# - add one line per companion
+# - { name: "dog1", img: "resources/characters/pipoya/Dog 01-1.png", behaviour: "dog" };
