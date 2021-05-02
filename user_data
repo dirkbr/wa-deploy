@@ -1,4 +1,7 @@
 #!/bin/bash
+
+date > user-data-time.txt
+
 DEBIAN_FRONTEND=noninteractive apt --assume-yes update
 DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop
 
@@ -9,3 +12,5 @@ cp --backup /opt/wa-deployment/.env /opt/workadventure/.env
 cp --backup /opt/wa-deployment/docker-compose.yaml /opt/workadventure/docker-compose.yaml
 
 /opt/wa-deployment/install-docker.sh
+
+date >> user-data-time.txt
