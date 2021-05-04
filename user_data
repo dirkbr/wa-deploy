@@ -13,7 +13,8 @@ DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop nginx
 /opt/wa-deployment/install-docker.sh
 
 # clone repos
-git clone https://github.com/thecodingmachine/workadventure.git ${WA_ROOT}/source
+#git clone https://github.com/thecodingmachine/workadventure.git ${WA_ROOT}/source
+git clone https://git.binary-kitchen.de/noby/workadventure.git ${WA_ROOT}/source
 git clone https://github.com/dirkbr/wa-deployment.git ${WA_ROOT}/wa-deployment
 
 # copy docker  files
