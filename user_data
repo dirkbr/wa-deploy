@@ -1,7 +1,7 @@
 #!/bin/bash
 WA_ROOT=/opt/workadventure
 
-date > user-data-time.txt
+date > ~/user-data-time.txt
 
 ## create user workadventure with Home-Directory /opt/workadventure (vgl. binary kitch)
 ##
@@ -24,12 +24,13 @@ cp --backup ${WA_ROOT}/wa-deployment/docker-compose.yaml ${WA_ROOT}/source/docke
 # copy nginx config
 cp ${WA_ROOT}/wa-deployment/workadventure /etc/nginx/sites-available/workadventure
 ln -s /etc/nginx/sites-available/workadventure /etc/nginx/sites-enabled/workadventure
+mkdir /etc/nginx/ssl
 
 # increase server_names_hash_bucket_size to 64 in /etc/nginx/nginx.conf
 
 
 
-date >> user-data-time.txt
+date >> ~/user-data-time.txt
 
 ### afterwards:
 
