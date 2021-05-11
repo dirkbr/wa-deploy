@@ -5,14 +5,14 @@ WA_ROOT=/opt/workadventure
 ##
 
 # install stuff
-DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop #nginx
+DEBIAN_FRONTEND=noninteractive apt --assume-yes install git nano htop nginx
 
 
 # clone repos
 #git clone https://github.com/thecodingmachine/workadventure.git ${WA_ROOT}/source
 git clone https://git.binary-kitchen.de/noby/workadventure.git ${WA_ROOT}/source
 git clone https://github.com/dirkbr/wa-deployment.git ${WA_ROOT}/wa-deployment
-bash ${WA_ROOT}/install-docker.sh
+bash ${WA_ROOT}/wa-deployment/install-docker.sh
 
 # copy docker  files
 cp --backup ${WA_ROOT}/wa-deployment/.env ${WA_ROOT}/source/.env
@@ -30,7 +30,7 @@ mkdir /etc/nginx/ssl
 # copy ssl certificates to !!! change remote folder !!!
 # - ssl_certificate /etc/nginx/ssl/wa.xn--tdelteile-q9a.de/fullchain.pem;
 # - ssl_certificate_key /etc/nginx/ssl/wa.xn--tdelteile-q9a.de/privkey.pem;
-# nginx -t && system restart nginx
+# nginx -t && systemctl restart nginx
 
 # companions
 # copy companion tiles to front/dist/resources/characters/
