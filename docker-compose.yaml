@@ -1,15 +1,41 @@
 version: "3"
 services:
+  reverse-proxy:
+    image: traefik:v2.0
+    command:
+      #- --api.insecure=true
+      - --providers.docker
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      #- "8080:8080"
+    depends_on:
+      - back
+      - front
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   front:
     image: thecodingmachine/nodejs:14
     environment:
       DEBUG_MODE: "$DEBUG_MODE"
+# MELD from v0.1.1: v0.1.1: no "
       JITSI_URL: "$JITSI_URL"
       JITSI_PRIVATE_MODE: "$JITSI_PRIVATE_MODE"
+      # MELD from v0.1.1: Host was not in v0.2
+      HOST: "0.0.0.0"
       NODE_ENV: development
-      API_URL: "pusher.$DOMAIN"
-      UPLOADER_URL: "uploader.$DOMAIN"
+# MELD from v0.1.1: v0.1.1
+      PUSHER_URL: /pusher
+      UPLOADER_URL: /uploader
+      ADMIN_URL: /admin
+# MELD from v0.1.1: v0.2
+#      API_URL: "pusher.$DOMAIN"
+#      UPLOADER_URL: "uploader.$DOMAIN"
+
 #      MAPS_URL: /maps
       STARTUP_COMMAND_1: ./templater.sh
       STARTUP_COMMAND_2: yarn install
@@ -21,12 +47,23 @@ services:
       START_ROOM_URL: "$START_ROOM_URL"
       MAX_PER_GROUP: "$MAX_PER_GROUP"
       MAX_USERNAME_LENGTH: "$MAX_USERNAME_LENGTH"
-    command: yarn run build # was yarn run start
+# MELD from v0.1.1: was yarn run build in v0.2
+    command: yarn run start
     volumes:
       - ./front:/usr/src/app
+    labels:
+      - "traefik.http.routers.front.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.front.entryPoints=web,traefik"
+      - "traefik.http.services.front.loadbalancer.server.port=8080"
+      - "traefik.http.routers.front-ssl.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.front-ssl.entryPoints=websecure"
+      - "traefik.http.routers.front-ssl.tls=true"
+      - "traefik.http.routers.front-ssl.service=front"
 
   pusher:
     image: thecodingmachine/nodejs:12
+# MELD from v0.1.1: was yarn prod in v0.2
+    command: yarn dev
     environment:
       DEBUG: "*"
       STARTUP_COMMAND_1: yarn install
@@ -34,13 +71,25 @@ services:
       SECRET_KEY: yourSecretKey
       ADMIN_API_TOKEN: "$ADMIN_API_TOKEN"
       API_URL: back:50051
+# MELD from v0.1.1: v0.1.1: no "
       JITSI_URL: "$JITSI_URL"
       JITSI_ISS: "$JITSI_ISS"
-    command: yarn run prod # was yarn dev
-    ports:
-      - "127.0.0.1:8002:8080"
+# MELD from v0.1.1: only in v0.2
+#    ports:
+#      - "127.0.0.1:8002:8080"
     volumes:
       - ./pusher:/usr/src/app
+    labels:
+      - "traefik.http.middlewares.strip-pusher-prefix.stripprefix.prefixes=/pusher"
+      - "traefik.http.routers.pusher.rule=PathPrefix(`/pusher`)"
+      - "traefik.http.routers.pusher.middlewares=strip-pusher-prefix@docker"
+      - "traefik.http.routers.pusher.entryPoints=web"
+      - "traefik.http.services.pusher.loadbalancer.server.port=8080"
+      - "traefik.http.routers.pusher-ssl.rule=PathPrefix(`/pusher`)"
+      - "traefik.http.routers.pusher-ssl.middlewares=strip-pusher-prefix@docker"
+      - "traefik.http.routers.pusher-ssl.entryPoints=websecure"
+      - "traefik.http.routers.pusher-ssl.tls=true"
+      - "traefik.http.routers.pusher-ssl.service=pusher"
 
   #maps:
     #image: thecodingmachine/nodejs:12-apache
@@ -67,6 +116,8 @@ services:
 
   back:
     image: thecodingmachine/nodejs:12
+# MELD from v0.1.1: was yarn run prod in v0.2
+    command: yarn dev
     #command: yarn run profile
     environment:
       DEBUG: "*"
@@ -75,24 +126,66 @@ services:
       SECRET_JITSI_KEY: "$SECRET_JITSI_KEY"
       ALLOW_ARTILLERY: "true"
       ADMIN_API_TOKEN: "$ADMIN_API_TOKEN"
+# MELD from v0.1.1: v0.1.1: no "
       JITSI_URL: "$JITSI_URL"
       JITSI_ISS: "$JITSI_ISS"
       MAX_PER_GROUP: "$MAX_PER_GROUP"
-    command: yarn run prod # was yarn dev
     volumes:
       - ./back:/usr/src/app
+    labels:
+      - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.routers.back.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.back.middlewares=strip-api-prefix@docker"
+      - "traefik.http.routers.back.entryPoints=web"
+      - "traefik.http.services.back.loadbalancer.server.port=8080"
+      - "traefik.http.routers.back-ssl.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.back-ssl.middlewares=strip-api-prefix@docker"
+      - "traefik.http.routers.back-ssl.entryPoints=websecure"
+      - "traefik.http.routers.back-ssl.tls=true"
+      - "traefik.http.routers.back-ssl.service=back"
 
   uploader:
     image: thecodingmachine/nodejs:12
+# MELD from v0.1.1: was yarn run prod in v0.2
+    command: yarn dev
     #command: yarn run profile
     environment:
       DEBUG: "*"
       STARTUP_COMMAND_1: yarn install
-    command: yarn run prod # was yarn dev
-    ports:
-      - "127.0.0.1:8005:8080"
+# MELD from v0.1.1: only in v0.2:
+#    ports:
+#      - "127.0.0.1:8005:8080"
     volumes:
       - ./uploader:/usr/src/app
+    labels:
+      - "traefik.http.middlewares.strip-uploader-prefix.stripprefix.prefixes=/uploader"
+      - "traefik.http.routers.uploader.rule=PathPrefix(`/uploader`)"
+      - "traefik.http.routers.uploader.middlewares=strip-uploader-prefix@docker"
+      - "traefik.http.routers.uploader.entryPoints=web"
+      - "traefik.http.services.uploader.loadbalancer.server.port=8080"
+      - "traefik.http.routers.uploader-ssl.rule=PathPrefix(`/uploader`)"
+      - "traefik.http.routers.uploader-ssl.middlewares=strip-uploader-prefix@docker"
+      - "traefik.http.routers.uploader-ssl.entryPoints=websecure"
+      - "traefik.http.routers.uploader-ssl.tls=true"
+      - "traefik.http.routers.uploader-ssl.service=uploader"
+
+# MELD from v0.1.1: no website in v0.2
+  website:
+    image: thecodingmachine/nodejs:12-apache
+    environment:
+      STARTUP_COMMAND_1: npm install
+      STARTUP_COMMAND_2: npm run watch &
+      APACHE_DOCUMENT_ROOT: dist/
+    volumes:
+      - ./website:/var/www/html
+    labels:
+      - "traefik.http.routers.website.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.website.entryPoints=web"
+      - "traefik.http.services.website.loadbalancer.server.port=80"
+      - "traefik.http.routers.website-ssl.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.website-ssl.entryPoints=websecure"
+      - "traefik.http.routers.website-ssl.tls=true"
+      - "traefik.http.routers.website-ssl.service=website"
 
   messages:
     #image: thecodingmachine/nodejs:14
