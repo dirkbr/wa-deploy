@@ -1,5 +1,4 @@
 #!/bin/bash
-WA_ROOT=/opt/workadventure
 TMP_DIR=/tmp/wa-setup
 
 date > ~/user-data-time.txt
