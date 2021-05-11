@@ -18,6 +18,11 @@ bash ${WA_ROOT}/wa-deployment/install-docker.sh
 cp --backup ${WA_ROOT}/wa-deployment/.env ${WA_ROOT}/source/.env
 cp --backup ${WA_ROOT}/wa-deployment/docker-compose.yaml ${WA_ROOT}/source/docker-compose.yaml
 
+cp --backup ${WA_ROOT}/wa-deployment/.bashrc ~/.bashrc
+
+rm -r ${WA_ROOT}/source/landing
+cp --backup -r ${WA_ROOT}/wa-deployment/landing ${WA_ROOT}/source/landing
+
 # copy nginx config
 cp ${WA_ROOT}/wa-deployment/workadventure /etc/nginx/sites-available/workadventure
 ln -s /etc/nginx/sites-available/workadventure /etc/nginx/sites-enabled/workadventure
