@@ -6,6 +6,12 @@ if (( $EUID != 0 )); then
     exit
 fi
 
+#check if docker is already installed
+if [ -x "$(command -v docker)" ]; then 
+	echo docker is already installed. Doing nothing.
+	exit
+fi
+
 apt update
 
 # prerequisites
